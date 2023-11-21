@@ -24,7 +24,11 @@ import { useUserContext } from "@/context/AuthContext";
 const SignIn = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLogging } = useUserContext();
+  const {
+    checkAuthUser,
+    isLoading: isUserLogging,
+    setIsAuthenticated,
+  } = useUserContext();
 
   // Queries
   const { mutateAsync: signInAccount, isPending: isSigningInUser } =
@@ -54,6 +58,7 @@ const SignIn = () => {
     } else {
       toast({ title: "please sign in again" });
     }
+    setIsAuthenticated(true);
   }
 
   return (
