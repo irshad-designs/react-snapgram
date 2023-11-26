@@ -20,7 +20,7 @@ import RootLayout from "./_root/RootLayout";
 
 const App = () => {
   return (
-    <main>
+    <main className="flex justify-center h-screen">
       <Routes>
         <Route element={<AuthLayout />}>
           <Route path="/sign-in" element={<SighnIn />} />
