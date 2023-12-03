@@ -7,6 +7,7 @@ import {
   getCurrentUser,
   getPostId,
   getRecentPosts,
+  getUserPosts,
   likedPost,
   savePost,
   signINAccount,
@@ -155,5 +156,13 @@ export const useDeletePostMutation = () => {
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
       });
     },
+  });
+};
+
+export const useGetUserPostsMutation = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
+    queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
   });
 };
