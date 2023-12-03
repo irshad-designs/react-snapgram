@@ -19,15 +19,23 @@ import { Models } from "appwrite";
 import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useCreatePostMutation } from "@/lib/react-query/queriesAndMutations";
+import {
+  useCreatePostMutation,
+  useUpdatePostMutation,
+} from "@/lib/react-query/queriesAndMutations";
+import Loader from "../shared/Loader";
 
 type postFormProps = {
   post?: Models.Document;
+  action: "Create" | "Update";
 };
 
-const PostForm = ({ post }: postFormProps) => {
+const PostForm = ({ post, action }: postFormProps) => {
+  // Queries
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
     useCreatePostMutation();
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePostMutation();
 
   const { user } = useUserContext();
   const navigate = useNavigate();
@@ -43,9 +51,27 @@ const PostForm = ({ post }: postFormProps) => {
   });
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof createPostValidationSchema>) {
+    // ACTION = UPDATE
+    if (post && action === "Update") {
+      const updatedPost = await updatePost({
+        ...values,
+        postId: post.$id,
+        imageId: post.imageId,
+        imageUrl: post.imageUrl,
+      });
+
+      if (!updatedPost) {
+        toast({
+          title: `${action} post failed. Please try again.`,
+        });
+      }
+      return navigate(`/post-details/${post.$id}`);
+    }
+
+    // ACTION = CREATE
     const newPost = await createPost({ ...values, userId: user.id });
     if (!newPost) {
-      toast({ title: "please try again" });
+      return toast({ title: "please try again" });
     }
     navigate("/");
   }
@@ -82,7 +108,7 @@ const PostForm = ({ post }: postFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaUrl={post?.image}
+                  mediaUrl={post?.imageUrl}
                 />
               </FormControl>
               <FormMessage className="shad-form_message" />
@@ -129,8 +155,10 @@ const PostForm = ({ post }: postFormProps) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
+            disabled={isLoadingCreate || isLoadingUpdate}
           >
-            Submit
+            {(isLoadingCreate || isLoadingUpdate) && <Loader />}
+            {action} Post
           </Button>
         </div>
       </form>
